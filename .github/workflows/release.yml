@@ -13,8 +13,53 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  build-and-push:
+  build:
+    name: Build (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            platform: linux/amd64
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract version from tag
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Get build date
+        id: date
+        run: echo "timestamp=$(git log -1 --pretty=%cI)" >> "$GITHUB_OUTPUT"
+
+      - name: Warm cache (${{ matrix.platform }})
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: false
+          build-args: |
+            COMMIT_TAG=${{ steps.version.outputs.tag }}
+            BUILD_DATE=${{ steps.date.outputs.timestamp }}
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
+          provenance: false
+
+  publish:
+    name: Publish multi-arch image
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,23 +86,24 @@ jobs:
         id: date
         run: echo "timestamp=$(git log -1 --pretty=%cI)" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push (versioned)
+      - name: Build and push (multi-arch)
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/habirabbu/musicseerr:${{ steps.version.outputs.tag }}
+          tags: ghcr.io/${{ github.repository_owner }}/musicseerr:${{ steps.version.outputs.tag }}
           build-args: |
             COMMIT_TAG=${{ steps.version.outputs.tag }}
             BUILD_DATE=${{ steps.date.outputs.timestamp }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=linux/amd64
+            type=gha,scope=linux/arm64
           provenance: false
 
       - name: Tag latest (stable releases only)
         if: ${{ !contains(steps.version.outputs.tag, '-') }}
         run: |
           docker buildx imagetools create \
-            -t ghcr.io/habirabbu/musicseerr:latest \
-            ghcr.io/habirabbu/musicseerr:${{ steps.version.outputs.tag }}
+            -t ghcr.io/${{ github.repository_owner }}/musicseerr:latest \
+            ghcr.io/${{ github.repository_owner }}/musicseerr:${{ steps.version.outputs.tag }}
