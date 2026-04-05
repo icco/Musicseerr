@@ -227,11 +227,7 @@ export function buildQueueItemsFromYouTube(
 	return tracks.map((t) => buildQueueItemFromYouTube(t, meta));
 }
 
-function resolveStreamUrl(
-	sourceType: string,
-	trackSourceId: string,
-	_format?: string | null
-): string | undefined {
+function resolveStreamUrl(sourceType: string, trackSourceId: string): string | undefined {
 	if (sourceType === 'local') return API.stream.local(trackSourceId);
 	if (sourceType === 'navidrome') return API.stream.navidrome(trackSourceId);
 	if (sourceType === 'jellyfin') return API.stream.jellyfin(trackSourceId);
@@ -257,7 +253,7 @@ export function playlistTrackToQueueItem(track: PlaylistTrack): QueueItem | null
 		coverUrl: track.cover_url,
 		sourceType,
 		artistId: track.artist_id ?? undefined,
-		streamUrl: resolveStreamUrl(sourceType, track.track_source_id, track.format),
+		streamUrl: resolveStreamUrl(sourceType, track.track_source_id),
 		format: track.format ?? undefined,
 		availableSources,
 		duration: track.duration ?? undefined,

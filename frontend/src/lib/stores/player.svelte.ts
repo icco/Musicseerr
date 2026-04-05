@@ -173,8 +173,9 @@ function createPlayerStore() {
 
 	async function resolveSourceForItem(
 		item: QueueItem,
-		_index: number
+		index: number
 	): Promise<{ source: PlaybackSource; loadUrl: string | undefined }> {
+		void index;
 		const url = resolveSourceUrl(item);
 		if (item.sourceType === 'youtube') {
 			isSeekable = true;
