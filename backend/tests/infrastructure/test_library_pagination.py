@@ -56,8 +56,8 @@ async def _seed(db: LibraryDB, n_albums: int = 100, n_artists: int = 20) -> None
 
 
 def test_albums_basic_pagination(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=10, offset=0)
     )
     assert total == 100
@@ -65,8 +65,8 @@ def test_albums_basic_pagination(db: LibraryDB):
 
 
 def test_albums_offset_beyond_total(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=10, offset=200)
     )
     assert total == 100
@@ -74,8 +74,8 @@ def test_albums_offset_beyond_total(db: LibraryDB):
 
 
 def test_albums_last_partial_page(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=30, offset=90)
     )
     assert total == 100
@@ -83,8 +83,8 @@ def test_albums_last_partial_page(db: LibraryDB):
 
 
 def test_albums_sort_by_title_asc(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, _ = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, _ = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, sort_by="title", sort_order="asc")
     )
     titles = [i.get("title", "") for i in items]
@@ -92,8 +92,8 @@ def test_albums_sort_by_title_asc(db: LibraryDB):
 
 
 def test_albums_sort_by_title_desc(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, _ = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, _ = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, sort_by="title", sort_order="desc")
     )
     titles = [i.get("title", "") for i in items]
@@ -101,8 +101,8 @@ def test_albums_sort_by_title_desc(db: LibraryDB):
 
 
 def test_albums_sort_by_year(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, _ = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, _ = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, sort_by="year", sort_order="desc")
     )
     years = [i.get("year", 0) or 0 for i in items]
@@ -110,8 +110,8 @@ def test_albums_sort_by_year(db: LibraryDB):
 
 
 def test_albums_sort_by_date_added(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, _ = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, _ = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, sort_by="date_added", sort_order="desc")
     )
     dates = [i.get("date_added", 0) or 0 for i in items]
@@ -119,8 +119,8 @@ def test_albums_sort_by_date_added(db: LibraryDB):
 
 
 def test_albums_search_by_title(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, search="Album A")
     )
     assert total > 0
@@ -128,8 +128,8 @@ def test_albums_search_by_title(db: LibraryDB):
 
 
 def test_albums_search_by_artist(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, search="Artist A")
     )
     assert total > 0
@@ -140,8 +140,8 @@ def test_albums_search_by_artist(db: LibraryDB):
 
 
 def test_albums_search_no_results(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=10, offset=0, search="zzz_no_match_zzz")
     )
     assert total == 0
@@ -149,11 +149,11 @@ def test_albums_search_no_results(db: LibraryDB):
 
 
 def test_albums_search_case_insensitive(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items_upper, total_upper = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items_upper, total_upper = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, search="ALBUM A")
     )
-    items_lower, total_lower = asyncio.get_event_loop().run_until_complete(
+    items_lower, total_lower = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, search="album a")
     )
     assert total_upper == total_lower
@@ -161,29 +161,29 @@ def test_albums_search_case_insensitive(db: LibraryDB):
 
 
 def test_albums_search_escapes_like_metacharacters(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items_pct, total_pct = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items_pct, total_pct = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, search="100%")
     )
     assert total_pct == 0
     assert len(items_pct) == 0
-    items_under, total_under = asyncio.get_event_loop().run_until_complete(
+    items_under, total_under = asyncio.run(
         db.get_albums_paginated(limit=100, offset=0, search="Album_A")
     )
     assert total_under == 0
 
 
 def test_artists_search_escapes_like_metacharacters(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_artists_paginated(limit=100, offset=0, search="Artist%B")
     )
     assert total == 0
 
 
 def test_albums_invalid_sort_falls_back(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=10, offset=0, sort_by="nonexistent")
     )
     assert total == 100
@@ -191,7 +191,7 @@ def test_albums_invalid_sort_falls_back(db: LibraryDB):
 
 
 def test_albums_empty_library(db: LibraryDB):
-    items, total = asyncio.get_event_loop().run_until_complete(
+    items, total = asyncio.run(
         db.get_albums_paginated(limit=10, offset=0)
     )
     assert total == 0
@@ -202,8 +202,8 @@ def test_albums_empty_library(db: LibraryDB):
 
 
 def test_artists_basic_pagination(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_artists_paginated(limit=5, offset=0)
     )
     assert total == 20
@@ -211,8 +211,8 @@ def test_artists_basic_pagination(db: LibraryDB):
 
 
 def test_artists_offset_beyond_total(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_artists_paginated(limit=10, offset=50)
     )
     assert total == 20
@@ -220,8 +220,8 @@ def test_artists_offset_beyond_total(db: LibraryDB):
 
 
 def test_artists_sort_by_name_asc(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, _ = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, _ = asyncio.run(
         db.get_artists_paginated(limit=20, offset=0, sort_by="name", sort_order="asc")
     )
     names = [i.get("name", "") for i in items]
@@ -229,8 +229,8 @@ def test_artists_sort_by_name_asc(db: LibraryDB):
 
 
 def test_artists_sort_by_album_count_desc(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, _ = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, _ = asyncio.run(
         db.get_artists_paginated(limit=20, offset=0, sort_by="album_count", sort_order="desc")
     )
     counts = [i.get("album_count", 0) for i in items]
@@ -238,8 +238,8 @@ def test_artists_sort_by_album_count_desc(db: LibraryDB):
 
 
 def test_artists_search(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_artists_paginated(limit=20, offset=0, search="Artist B")
     )
     assert total > 0
@@ -247,8 +247,8 @@ def test_artists_search(db: LibraryDB):
 
 
 def test_artists_search_no_results(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db))
-    items, total = asyncio.get_event_loop().run_until_complete(
+    asyncio.run(_seed(db))
+    items, total = asyncio.run(
         db.get_artists_paginated(limit=10, offset=0, search="zzz_no_match_zzz")
     )
     assert total == 0
@@ -256,7 +256,7 @@ def test_artists_search_no_results(db: LibraryDB):
 
 
 def test_artists_empty_library(db: LibraryDB):
-    items, total = asyncio.get_event_loop().run_until_complete(
+    items, total = asyncio.run(
         db.get_artists_paginated(limit=10, offset=0)
     )
     assert total == 0
@@ -267,12 +267,12 @@ def test_artists_empty_library(db: LibraryDB):
 
 
 def test_albums_pagination_no_duplicates(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db, n_albums=50))
+    asyncio.run(_seed(db, n_albums=50))
     all_mbids: list[str] = []
     offset = 0
     page_size = 10
     while True:
-        items, total = asyncio.get_event_loop().run_until_complete(
+        items, total = asyncio.run(
             db.get_albums_paginated(
                 limit=page_size, offset=offset, sort_by="title", sort_order="asc"
             )
@@ -286,12 +286,12 @@ def test_albums_pagination_no_duplicates(db: LibraryDB):
 
 
 def test_artists_pagination_no_duplicates(db: LibraryDB):
-    asyncio.get_event_loop().run_until_complete(_seed(db, n_albums=10, n_artists=30))
+    asyncio.run(_seed(db, n_albums=10, n_artists=30))
     all_mbids: list[str] = []
     offset = 0
     page_size = 7
     while True:
-        items, total = asyncio.get_event_loop().run_until_complete(
+        items, total = asyncio.run(
             db.get_artists_paginated(
                 limit=page_size, offset=offset, sort_by="name", sort_order="asc"
             )
